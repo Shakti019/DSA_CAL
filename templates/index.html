@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSA-Powered Smart Calculator</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        @media (max-width: 768px) {
+            .sidebar-mobile {
+                position: fixed;
+                left: 0; top: 0; bottom: 0;
+                width: 80vw;
+                max-width: 320px;
+                z-index: 50;
+                background: #0f172a;
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+            .sidebar-mobile.open {
+                transform: translateX(0);
+            }
+            .sidebar-backdrop {
+                position: fixed;
+                left: 0; top: 0; right: 0; bottom: 0;
+                background: rgba(0,0,0,0.3);
+                z-index: 40;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 min-h-screen">
+    <div class="flex min-h-screen">
+        <!-- Sidebar -->
+        <aside class="bg-slate-900 text-white w-20 md:w-56 flex flex-col items-center py-6 shadow-2xl transition-all duration-300 z-20">
+            <div class="mb-8 text-3xl logo"><i class="fa-solid fa-calculator"></i></div>
+            <nav class="flex-1 w-full">
+                <ul class="space-y-2 md:space-y-4">
+                    <li class="nav-item active flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="calculator" title="Calculator"><i class="fa-solid fa-keyboard text-xl md:mr-3"></i><span class="hidden md:inline">Calculator</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="tree" title="Expression Tree"><i class="fa-solid fa-sitemap text-xl md:mr-3"></i><span class="hidden md:inline">Tree</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="graph" title="Graph Plotter"><i class="fa-solid fa-chart-line text-xl md:mr-3"></i><span class="hidden md:inline">Graph</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="history" title="History"><i class="fa-solid fa-clock-rotate-left text-xl md:mr-3"></i><span class="hidden md:inline">History</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="variables" title="Variables"><i class="fa-solid fa-database text-xl md:mr-3"></i><span class="hidden md:inline">Variables</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="matrix" title="Matrix Calculator"><i class="fa-solid fa-table text-xl md:mr-3"></i><span class="hidden md:inline">Matrix</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="complex" title="Complex Calculator"><i class="fa-solid fa-infinity text-xl md:mr-3"></i><span class="hidden md:inline">Complex</span></li>
+                    <li class="nav-item flex flex-col items-center md:flex-row md:items-center cursor-pointer py-2 px-2 md:px-4 rounded-lg hover:bg-blue-100 hover:text-blue-600 transition-all duration-200" data-panel="equation" title="Equation Solver"><i class="fa-solid fa-equals text-xl md:mr-3"></i><span class="hidden md:inline">Equation</span></li>
+                </ul>
+            </nav>
+        </aside>
+        <!-- Main Content -->
+        <main class="flex-1 flex flex-col bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 p-2 md:p-0">
+            <header class="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 bg-white/90 shadow-md">
+                <h1 class="text-xl md:text-2xl font-bold text-blue-600 tracking-tight">DSA-Powered Smart Calculator</h1>
+                <div class="flex items-center gap-2">
+                    <button id="helpBtn" class="help-btn text-gray-600 hover:text-blue-500 transition" title="Help / Info" aria-label="Help"><i class="fa-solid fa-circle-question text-xl"></i></button>
+                </div>
+            </header>
+            <!-- Panels -->
+            <section class="panel calculator-panel flex flex-col items-center justify-center flex-1 px-2 py-2 md:p-6 lg:p-12 w-full mx-auto max-w-xl animate__animated animate__fadeIn" data-panel="calculator">
+                <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl p-4 md:p-8 flex flex-col gap-6 animate__animated animate__fadeInUp border-l-4 border-blue-400 border-opacity-40 animate-fade-in border border-blue-200 relative mx-auto">
+                    <!-- FAB always visible at top right -->
+                    <div class="absolute top-4 right-4 z-30">
+                        <button id="fab" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg w-12 h-12 flex items-center justify-center text-2xl transition transform hover:scale-110 animate__animated animate__bounceIn" title="Quick Actions"><i class="fa-solid fa-bolt"></i></button>
+                        <div id="fabMenu" class="hidden absolute top-14 right-0 bg-white rounded-xl shadow-lg p-4 flex flex-col gap-3 w-48 animate__animated animate__fadeIn border border-blue-200">
+                            <button id="voiceBtn" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-50 text-blue-600"><i class="fa-solid fa-microphone"></i> Voice Input</button>
+                            <button id="exportPdfBtn" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-50 text-blue-600"><i class="fa-solid fa-file-pdf"></i> Export to PDF</button>
+                            <button id="aiExplainBtn" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-50 text-blue-600"><i class="fa-solid fa-robot"></i> AI Explain</button>
+                            <button id="formulaBankBtn" class="flex items-center gap-2 px-4 py-2 rounded hover:bg-blue-50 text-blue-600"><i class="fa-solid fa-book"></i> Formula Bank</button>
+                        </div>
+                    </div>
+                    <h2 class="text-lg md:text-xl font-semibold text-slate-800 flex items-center gap-2 mb-2"><i class="fa-solid fa-keyboard"></i> Calculator <span class="ml-2 px-2 py-1 rounded-full bg-blue-100 text-blue-600 text-xs"><i class="fa-solid fa-magic-wand-sparkles"></i> Smart</span></h2>
+                    <!-- Variable assignment form -->
+                    <div id="varAssignBox" class="w-full flex flex-col gap-2 mb-2 animate__animated animate__fadeInLeft">
+                        <div class="flex flex-col sm:flex-row gap-2 items-center">
+                            <input id="varNameInput" type="text" maxlength="1" class="w-16 border-2 border-blue-200 rounded-lg px-2 py-2 text-lg text-center font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" placeholder="a">
+                            <span class="text-lg font-bold">=</span>
+                            <input id="varValueInput" type="text" class="flex-1 border-2 border-blue-200 rounded-lg px-3 py-2 text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" placeholder="Expression or value">
+                            <button id="addVarBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-lg font-semibold transition flex items-center gap-2 animate__animated animate__pulse" title="Add or update variable"><i class="fa-solid fa-plus-circle"></i> Add/Update</button>
+                        </div>
+                        <div id="varAssignMsg" class="text-sm text-red-500 mt-1" style="display:none;"></div>
+                    </div>
+                    <!-- List of current variables for quick edit/delete -->
+                    <div id="varListBox" class="w-full mb-2 overflow-x-auto animate__animated animate__fadeInRight">
+                        <ul id="varList" class="divide-y divide-blue-100"></ul>
+                    </div>
+                    <!-- Main input row -->
+                    <div class="flex flex-col md:flex-row gap-3 items-center mt-2">
+                        <input type="text" id="expressionInput" class="flex-1 border-2 border-blue-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition shadow-sm" placeholder="Enter expression...">
+                        <button id="evaluateBtn" class="main-btn bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg shadow-lg text-lg font-semibold transition flex items-center gap-2 animate__animated animate__pulse" title="Evaluate (Ctrl+Enter)"><i class="fa-solid fa-equals"></i> Evaluate</button>
+                    </div>
+                    <!-- Add new result box -->
+                    <div id="resultBox" class="w-full flex justify-center my-4">
+                        <div id="result" class="min-w-[120px] text-center text-xl font-bold rounded-lg px-6 py-3 border-2 border-blue-500 bg-blue-50 text-blue-700 shadow transition-all animate__animated animate__fadeInUp" aria-live="polite"><i class="fa-solid fa-lightbulb text-yellow-400 mr-2"></i></div>
+                    </div>
+                    <div class="tip text-slate-400 text-sm mt-1 animate__animated animate__fadeIn"><i class="fa-solid fa-circle-info mr-1"></i> Tip: Press <b>Ctrl+Enter</b> to evaluate!</div>
+                    <!-- Steps shown below result -->
+                    <div id="stepsCard" class="mt-6 overflow-x-auto animate__animated animate__fadeInUp">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-2 flex items-center gap-2"><i class="fa-solid fa-list-ol"></i> Step-by-Step</h3>
+                        <pre id="steps" class="bg-slate-50 rounded-lg p-4 text-base font-mono text-slate-700 shadow-inner"></pre>
+                    </div>
+                </div>
+            </section>
+            <section class="panel tree-panel dashboard-card" data-panel="tree" style="display:none;">
+                <h2><i class="fa-solid fa-sitemap"></i> Expression Tree</h2>
+                <pre id="tree"></pre>
+            </section>
+            <section class="panel graph-panel dashboard-card flex flex-col items-center justify-center px-2 py-2 w-full mx-auto max-w-2xl" data-panel="graph" style="display:none;">
+                <h2 class="flex items-center justify-center"><i class="fa-solid fa-chart-line"></i> Graph Plotter</h2>
+                <div class="input-row flex flex-col gap-2 mb-2 w-full">
+                    <label class="font-semibold">Functions (one per line, e.g. x^2+1 or y>x+2):</label>
+                    <textarea id="graphFunctions" rows="3" class="border rounded px-3 py-2 text-lg font-mono w-full" placeholder="x^2+1\nsin(x)\ny>x+2"></textarea>
+                    <div class="flex flex-wrap gap-2 items-center mt-1">
+                        <button id="plotBtn" class="main-btn w-full sm:w-auto" title="Plot Graph"><i class="fa-solid fa-chart-line"></i> Plot Graph</button>
+                        <button id="zoomInBtn" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded w-full sm:w-auto" title="Zoom In">+</button>
+                        <button id="zoomOutBtn" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded w-full sm:w-auto" title="Zoom Out">-</button>
+                        <button id="panLeftBtn" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded w-full sm:w-auto" title="Pan Left">&#8592;</button>
+                        <button id="panRightBtn" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded w-full sm:w-auto" title="Pan Right">&#8594;</button>
+                        <button id="panUpBtn" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded w-full sm:w-auto" title="Pan Up">&#8593;</button>
+                        <button id="panDownBtn" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1 rounded w-full sm:w-auto" title="Pan Down">&#8595;</button>
+                    </div>
+                    <div id="graphLegend" class="flex gap-4 mt-2 flex-wrap"></div>
+                </div>
+                <div class="w-full overflow-x-auto flex justify-center">
+                    <canvas id="graphCanvas" width="500" height="300" class="w-full max-w-full"></canvas>
+                </div>
+            </section>
+            <section class="panel history-panel dashboard-card" data-panel="history" style="display:none;">
+                <h2><i class="fa-solid fa-clock-rotate-left"></i> History</h2>
+                <ul id="history"></ul>
+            </section>
+            <section class="panel variables-panel dashboard-card" data-panel="variables" style="display:none;">
+                <h2><i class="fa-solid fa-database"></i> Variables</h2>
+                <ul id="variablesList" class="divide-y divide-blue-100"></ul>
+            </section>
+            <section class="panel matrix-panel dashboard-card flex flex-col items-center justify-center px-2 py-2 w-full mx-auto max-w-2xl" data-panel="matrix" style="display:none;">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2 justify-center"> <i class="fa-solid fa-table"></i> Matrix Calculator</h2>
+                <div class="flex flex-col md:flex-row gap-4 md:gap-8 w-full justify-center">
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Matrix A Size:</label>
+                        <div class="flex gap-2 items-center">
+                            <input id="matrixARows" type="number" min="1" max="5" value="2" class="w-14 border rounded px-2 py-1 text-center">
+                            <span>x</span>
+                            <input id="matrixACols" type="number" min="1" max="5" value="2" class="w-14 border rounded px-2 py-1 text-center">
+                        </div>
+                        <div id="matrixAInputs" class="mt-2 overflow-x-auto"></div>
+                    </div>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Matrix B Size:</label>
+                        <div class="flex gap-2 items-center">
+                            <input id="matrixBRows" type="number" min="1" max="5" value="2" class="w-14 border rounded px-2 py-1 text-center">
+                            <span>x</span>
+                            <input id="matrixBCols" type="number" min="1" max="5" value="2" class="w-14 border rounded px-2 py-1 text-center">
+                        </div>
+                        <div id="matrixBInputs" class="mt-2 overflow-x-auto"></div>
+                    </div>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Operation:</label>
+                        <select id="matrixOp" class="border rounded px-2 py-1 w-full md:w-auto">
+                            <option value="add">A + B</option>
+                            <option value="subtract">A - B</option>
+                            <option value="multiply">A × B</option>
+                            <option value="detA">det(A)</option>
+                            <option value="detB">det(B)</option>
+                            <option value="invA">A⁻¹</option>
+                            <option value="invB">B⁻¹</option>
+                            <option value="transA">Aᵗ</option>
+                            <option value="transB">Bᵗ</option>
+                        </select>
+                        <button id="matrixCalcBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-lg font-semibold transition mt-2 w-full md:w-auto">Calculate</button>
+                    </div>
+                </div>
+                <div id="matrixResultBox" class="mt-6 overflow-x-auto w-full">
+                    <h3 class="font-semibold text-blue-700 mb-2">Result:</h3>
+                    <div id="matrixResult" class="bg-white rounded-lg shadow p-4 font-mono text-lg min-h-[40px] overflow-x-auto w-full" aria-live="polite"></div>
+                </div>
+            </section>
+            <section class="panel complex-panel dashboard-card flex flex-col items-center justify-center px-2 py-2 w-full mx-auto max-w-md" data-panel="complex" style="display:none;">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2 justify-center"><i class="fa-solid fa-infinity"></i> Complex Number Calculator</h2>
+                <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-end w-full justify-center">
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Number 1:</label>
+                        <input id="complex1" type="text" class="border rounded px-3 py-2 text-lg font-mono w-full" placeholder="e.g. 2+3i or 1-i">
+                    </div>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Number 2:</label>
+                        <input id="complex2" type="text" class="border rounded px-3 py-2 text-lg font-mono w-full" placeholder="e.g. 1+2i or 4">
+                    </div>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Operation:</label>
+                        <select id="complexOp" class="border rounded px-2 py-1 w-full md:w-auto">
+                            <option value="add">+</option>
+                            <option value="subtract">-</option>
+                            <option value="multiply">×</option>
+                            <option value="divide">÷</option>
+                            <option value="mod">|z| (modulus)</option>
+                            <option value="conj">conj(z)</option>
+                        </select>
+                        <button id="complexCalcBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-lg font-semibold transition mt-2 w-full md:w-auto">Calculate</button>
+                    </div>
+                </div>
+                <div id="complexResultBox" class="mt-6 w-full">
+                    <h3 class="font-semibold text-blue-700 mb-2">Result:</h3>
+                    <div id="complexResult" class="bg-white rounded-lg shadow p-4 font-mono text-lg min-h-[40px] w-full" aria-live="polite"></div>
+                </div>
+            </section>
+            <section class="panel equation-panel dashboard-card flex flex-col items-center justify-center px-2 py-2 w-full mx-auto max-w-md" data-panel="equation" style="display:none;">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2 justify-center"><i class="fa-solid fa-equals"></i> Equation Solver</h2>
+                <div class="flex flex-col md:flex-row gap-4 md:gap-8 items-end w-full justify-center">
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Equation:</label>
+                        <input id="equationInput" type="text" class="border rounded px-3 py-2 text-lg font-mono w-full" placeholder="e.g. 2x+3=7 or x^2-4=0">
+                    </div>
+                    <div class="flex flex-col gap-2 w-full md:w-auto">
+                        <label class="font-semibold">Variable (optional):</label>
+                        <input id="equationVar" type="text" class="border rounded px-3 py-2 text-lg font-mono w-full" placeholder="e.g. x">
+                    </div>
+                    <button id="equationSolveBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow text-lg font-semibold transition w-full md:w-auto">Solve</button>
+                </div>
+                <div id="equationResultBox" class="mt-6 w-full">
+                    <h3 class="font-semibold text-blue-700 mb-2">Result:</h3>
+                    <div id="equationResult" class="bg-white rounded-lg shadow p-4 font-mono text-lg min-h-[40px] w-full" aria-live="polite"></div>
+                    <div id="equationSteps" class="mt-4 text-base text-slate-700"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <!-- Loading Spinner Overlay -->
+    <div id="loadingSpinner" class="loading-spinner-overlay" style="display:none;">
+        <div class="spinner"></div>
+    </div>
+    <!-- Formula Bank Modal -->
+    <div id="formulaBankModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="formulaBankTitle" style="display:none;">
+        <div class="modal-content">
+            <button id="closeFormulaBank" class="close-modal" aria-label="Close Formula Bank">&times;</button>
+            <h2 id="formulaBankTitle" class="text-lg font-bold text-blue-500 mb-2"><i class="fa-solid fa-book"></i> Formula Bank</h2>
+            <div class="modal-body flex flex-col gap-2">
+                <button class="formula-btn px-3 py-2 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-left" data-formula="(-b + sqrt(b^2 - 4*a*c)) / (2*a)">Quadratic Formula: <span class="font-mono">(-b + sqrt(b^2 - 4*a*c)) / (2*a)</span></button>
+                <button class="formula-btn px-3 py-2 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-left" data-formula="pi * r^2">Area of Circle: <span class="font-mono">pi * r^2</span></button>
+                <button class="formula-btn px-3 py-2 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-left" data-formula="2 * pi * r">Circumference: <span class="font-mono">2 * pi * r</span></button>
+                <button class="formula-btn px-3 py-2 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-left" data-formula="(a + b + c) / 3">Average: <span class="font-mono">(a + b + c) / 3</span></button>
+                <button class="formula-btn px-3 py-2 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 text-left" data-formula="sqrt(a^2 + b^2)">Pythagoras: <span class="font-mono">sqrt(a^2 + b^2)</span></button>
+            </div>
+        </div>
+    </div>
+    <!-- Toast notification container -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 items-end"></div>
+    <script src="/static/js/script.js"></script>
+    <script>
+    // Sidebar mobile toggle logic
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    if (sidebarToggle && sidebar && sidebarBackdrop) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+            sidebarBackdrop.classList.toggle('hidden');
+        });
+        sidebarBackdrop.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            sidebarBackdrop.classList.add('hidden');
+        });
+    }
+    </script>
+</body>
+</html> 
